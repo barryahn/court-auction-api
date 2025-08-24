@@ -7,7 +7,7 @@ import (
 
 // Config는 애플리케이션의 런타임 설정을 보관합니다.
 type Config struct {
-    // API 서버 포트 (예: ":8080")
+    // API 서버 포트 (예: ":9090")
     APIServerAddr string
 
     // PostgreSQL DSN (예: "postgres://user:pass@localhost:5432/dbname?sslmode=disable")
@@ -21,7 +21,7 @@ type Config struct {
 // 필수값 누락 시 에러를 반환합니다.
 func Load() (*Config, error) {
     cfg := &Config{
-        APIServerAddr: getEnv("API_ADDR", ":8080"),
+        APIServerAddr: getEnv("API_ADDR", ":9092"),
         PostgresDSN:   os.Getenv("POSTGRES_DSN"),
         RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
     }

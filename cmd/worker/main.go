@@ -23,6 +23,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// 스키마 보장
+	if err := db.EnsureSchema(ctx); err != nil {
+		panic(err)
+	}
+
 	q := queue.NewQueue(cfg.RedisAddr)
 
 	for {
@@ -39,8 +44,12 @@ func main() {
 			continue
 		}
 
-		// TODO: DB 저장 로직 추가 (db.Pool 사용)
-		fmt.Printf("크롤링 완료: %d 건 수집\n", len(items))
-		_ = db
+		if len(items) > 0 {
+			if err := db.UpsertAuctionItems(ctx, items); err != nil {
+				fmt.Println("DB 저장 실패:", err)
+				continue
+			}
+		}
+		fmt.Printf("크롤링 완료 및 저장: %d 건\n", len(items))
 	}
 }

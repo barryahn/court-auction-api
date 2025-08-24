@@ -25,6 +25,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// 스키마 보장
+	if err := db.EnsureSchema(ctx); err != nil {
+		panic(err)
+	}
+
 	r := gin.Default()
 
 	// 헬스체크: DB 연결 확인
@@ -54,9 +59,16 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "queued", "url": url})
 	})
 
-	// (나중에 DB 붙이면) 크롤링된 결과 반환
+	// DB 결과 반환 (간단 페이징)
 	r.GET("/auctions", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"data": "여기에 DB 결과 반환"})
+		limit := 20
+		offset := 0
+		list, err := db.ListAuctions(c.Request.Context(), limit, offset)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"data": list, "limit": limit, "offset": offset})
 	})
 
 	r.Run(cfg.APIServerAddr)
